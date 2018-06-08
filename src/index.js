@@ -80,6 +80,18 @@ function run(mainFunc, driverObj) {
   //Then we use stream to filter..
 
 
+  /**
+   * Cycle.js is a great frame work to learn about how reactive stream can be used as a underlying tech to build front-end
+   * however, as most people would agree, staying "PURE" is not easy in web front end.
+   * I believe Cycle.js needs a lot of drivers for it to survive, this means developers should contribute to making drivers.
+   * I don't see this happening this year at least. If the whole thing was written in rx.js and only rx.js people would have look at cycle.js in detail.
+   * In web, easiness attracts people. Popularity leads to progress.
+   * I will come back and have look at cycle.js next year.
+   * 
+   * **/
+
+
+
 }
 
 run(main, { DOM: domDriver, log: logDriver })
