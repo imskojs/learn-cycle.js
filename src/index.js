@@ -38,7 +38,7 @@ function run(mainFunc, driverObj) {
   driverNames.forEach(driverName => {
     if (logicStreamObj[driverName]) {
       const driverFunc = driverObj[driverName];
-      driverFun(logicStreamObj[driverName]);
+      driverFunc(logicStreamObj[driverName]);
     }
   })
 }
