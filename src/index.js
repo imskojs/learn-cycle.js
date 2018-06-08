@@ -5,9 +5,12 @@ import fromEvent from "xstream/extra/fromEvent";
 function main(fromDriver) {
   // If more than one logicStream we return object with keyed logic streams.
   //This can be thought of as routing of streams to different domDrivers. Routing is not side-effect and is logic so goes into main
+  const click$ = fromDriver.DOM;
   return {
-    DOM: xs.periodic(1000)
-      .fold(prev => prev + 1, 0)
+    DOM: click$.startWith(null)
+      .map(() => xs.periodic(1000)
+        .fold(prev => prev + 1, 0)
+      ).flatten()
       .map(i => `Seconds elapsed: ${i}`),
     log: xs.periodic(2000)
       .fold(prev => prev + 1, 0)
@@ -43,17 +46,33 @@ function run(mainFunc, driverObj) {
   //an object with driverName as a key and logicStream as value. (eg {DOM: xs.periodic(10)})
   // driverFunction returns effectStreams, and run function inputs effectStream back to mainFunction after categorizing
   //which driverFunction the effect stream is from. (eg {DOM: click$})
+  const relayFromLogicStream = xs.create();
+  const click$ = domDriver(relayFromLogicStream);
   const logicStreamObj = mainFunc({ DOM: click$ });
-  const click$ = domDriver(logicStreamObj.DOM)
+  relayFromLogicStream.imitate(logicStreamObj.DOM)
+
+  // INITIALLY domDriver runs and subscribes to a stream that emits nothing, since it's hot observable no next tick happens upon subscribtion by driver.
+  // it returns effect stream with no problem***. 
+
+  // Since there is no possible DOM rendering due to next tick not happening in domDriver there would be no dom to listen to in domDriver so
+  // INITIALLY main runs with empty effect stream.
+
+  // Here we are in a state nothing happens. In order for something to happen one of the streams have to emit value (start the engine)
+  //so that other stream will emit the value and so on (cyclically!)
+
+  // In order to kick start the engine, within main function we would give initial value for a effect stream with (`startWith` operator) as we need initial state 
+  //before rendering anything to the dom. Note, logicStream runs as soon as startWith happens as it is already subscribed in domDriver through
+  //relayFromLoginStream. Now with `startWith` DOM is rendered, and any click from user will rerender DOM...Normally that would have shit performance
+  //but since cycle uses snapdom it only rerenders things that are changed.
+
+  // So result is BOTH domDriver and main runs without getting any stream. So INITIAL run simply sets up and connects streams.
+
+  // ***Q:: in this example in domDriver `document` is used which is global. What if dom driver requires to
+  //listen to specific dom requested by logic stream? Maybe relayStream is setup for fromEvent and actual setup is done only when next tick happens
+  //for the first time. FOR EXAMPLE: set `relayClick$` and return that. In next tick relayClick$.imitate(wantedStream$)
+  // Safe to assume xstream is used for DOM drive because of this imitate helper?
 
 
-  // const driverNames = Object.keys(driverObj);
-  // driverNames.forEach(driverName => {
-  //   if (logicStreamObj[driverName]) {
-  //     const driverFunc = driverObj[driverName];
-  //     driverFunc(logicStreamObj[driverName]);
-  //   }
-  // })
 }
 
 run(main, { DOM: domDriver, log: logDriver })
