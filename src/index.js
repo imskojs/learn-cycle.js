@@ -1,7 +1,8 @@
 import xs from "xstream";
+import fromEvent from "xstream/extra/fromEvent";
 
 // Logic goes inside the main function
-function main() {
+function main(fromDriver) {
   // If more than one logicStream we return object with keyed logic streams.
   //This can be thought of as routing of streams to different domDrivers. Routing is not side-effect and is logic so goes into main
   return {
@@ -21,7 +22,11 @@ function domDriver(text$) {
       const elem = document.querySelector('#app');
       elem.textContent = str;
     }
-  })
+  });
+
+  // Stream returned from domDriver will go to logic function(main)
+  const click$ = fromEvent(document, 'click');
+  return click$;
 }
 
 function logDriver(text$) {
@@ -33,14 +38,22 @@ function logDriver(text$) {
 // Only think run function do is plug logicStreams to appropriate drivers
 //Hence run function is not a logic nor a side effect. It is what makes cycle.js, maybe.
 function run(mainFunc, driverObj) {
-  const logicStreamObj = mainFunc();
-  const driverNames = Object.keys(driverObj);
-  driverNames.forEach(driverName => {
-    if (logicStreamObj[driverName]) {
-      const driverFunc = driverObj[driverName];
-      driverFunc(logicStreamObj[driverName]);
-    }
-  })
+  // Note, main function takes an object as an input with driverName as a key, just like it returns object with driverName as a key.
+  // Run function coordinates routing. main function tells run function which stream goes to which driver, by returning
+  //an object with driverName as a key and logicStream as value. (eg {DOM: xs.periodic(10)})
+  // driverFunction returns effectStreams, and run function inputs effectStream back to mainFunction after categorizing
+  //which driverFunction the effect stream is from. (eg {DOM: click$})
+  const logicStreamObj = mainFunc({ DOM: click$ });
+  const click$ = domDriver(logicStreamObj.DOM)
+
+
+  // const driverNames = Object.keys(driverObj);
+  // driverNames.forEach(driverName => {
+  //   if (logicStreamObj[driverName]) {
+  //     const driverFunc = driverObj[driverName];
+  //     driverFunc(logicStreamObj[driverName]);
+  //   }
+  // })
 }
 
 run(main, { DOM: domDriver, log: logDriver })
