@@ -41,6 +41,7 @@ function logDriver(text$) {
 // Only think run function do is plug logicStreams to appropriate drivers
 //Hence run function is not a logic nor a side effect. It is what makes cycle.js, maybe.
 function run(mainFunc, driverObj) {
+
   // Note, main function takes an object as an input with driverName as a key, just like it returns object with driverName as a key.
   // Run function coordinates routing. main function tells run function which stream goes to which driver, by returning
   //an object with driverName as a key and logicStream as value. (eg {DOM: xs.periodic(10)})
@@ -75,6 +76,8 @@ function run(mainFunc, driverObj) {
   //listen to specific dom requested by logic stream? Maybe relayStream is setup for fromEvent and actual setup is done only when next tick happens
   //for the first time. FOR EXAMPLE: set `relayClick$` and return that. In next tick relayClick$.imitate(wantedStream$)
   // Safe to assume xstream is used for DOM drive because of this imitate helper?
+  // No, event listener is set on document for particular event. This means event listeners are fired for a particular event!..
+  //Then we use stream to filter..
 
 
 }
