@@ -2,9 +2,15 @@ import xs from "xstream";
 
 // Logic goes inside the main function
 function main() {
-  return xs.periodic(1000)
-    .fold(prev => prev + 1, 0)
-    .map(i => `Seconds elapsed: ${i}`)
+  // If more than one logicStream we return object with keyed logic streams.
+  //This can be thought of as routing of streams to different domDrivers. Routing is not side-effect and is logic so goes into main
+  return {
+    DOM: xs.periodic(1000)
+      .fold(prev => prev + 1, 0)
+      .map(i => `Seconds elapsed: ${i}`),
+    log: xs.periodic(2000)
+      .fold(prev => prev + 1, 0)
+  }
 }
 
 // Side effects or results go to the domDrive function
@@ -25,7 +31,7 @@ function domDriver(text$) {
 const logicStream = main()
 
 // LOGIC stream goes to domDriver. domDriver handles side effects such as writing to DOM.
-domDriver(logicStream)
+domDriver(logicStream.DOM)
 
 
 // Since logic stream and side-effects are seperated we can PLUG logic stream to other Drivers (side-effect handlers)
@@ -34,7 +40,7 @@ function logDriver(text$) {
     next: text => console.log(text)
   })
 }
-logDriver(logicStream)
+logDriver(logicStream.log)
 
 
 // NOTE:
@@ -42,7 +48,6 @@ logDriver(logicStream)
 //This means we can give logicStream (sink) to different drivers for different platforms.
 //Q:: How easy is it to make a complex drivers? 
 //Q:: Is there a standard way where there are rules devs agree upon to make drivers? 
-
 
 
 // 2)In order for an observable to be subscribed more than once, it has to be HOT observable, otherwise it will create seperate
