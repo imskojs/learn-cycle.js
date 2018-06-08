@@ -28,6 +28,15 @@ const logicStream = main()
 domDriver(logicStream)
 
 
+// Since logic stream and side-effects are seperated we can PLUG logic stream to other Drivers (side-effect handlers)
+function logDriver(text$) {
+  text$.subscribe({
+    next: text => console.log(text)
+  })
+}
+logDriver(logicStream)
+
+
 // NOTE:
 // 1) Logic and side effects are seperated.
 //This means we can give logicStream (sink) to different drivers for different platforms.
@@ -36,5 +45,10 @@ domDriver(logicStream)
 
 
 
+// 2)In order for an observable to be subscribed more than once, it has to be HOT observable, otherwise it will create seperate
+//independent subscribtions resulting in multiple independent emition of values. In rx.js we could use .share().
+//`xstream` unlike Rx.js has hot observable as a default.
+// Q:: Do xstream have cold observables?
+// Q:: Do we ever need cold observable?
 
 
