@@ -24,23 +24,26 @@ function domDriver(text$) {
   })
 }
 
-// This returns a stream. 
-//Steam of a logic completely seperated from how it's going to be attached to the dom.
-// `sink` or `logicStream` to represent the end of logic stream. i.e. No logic flows upwards. Uni-directional.
-// Prefer name logicStream
-const logicStream = main()
-
-// LOGIC stream goes to domDriver. domDriver handles side effects such as writing to DOM.
-domDriver(logicStream.DOM)
-
-
-// Since logic stream and side-effects are seperated we can PLUG logic stream to other Drivers (side-effect handlers)
 function logDriver(text$) {
   text$.subscribe({
     next: text => console.log(text)
   })
 }
-logDriver(logicStream.log)
+
+// Only think run function do is plug logicStreams to appropriate drivers
+//Hence run function is not a logic nor a side effect. It is what makes cycle.js, maybe.
+function run(mainFunc, driverObj) {
+  const logicStreamObj = mainFunc();
+  const driverNames = Object.keys(driverObj);
+  driverNames.forEach(driverName => {
+    if (logicStreamObj[driverName]) {
+      const driverFunc = driverObj[driverName];
+      driverFun(logicStreamObj[driverName]);
+    }
+  })
+}
+
+run(main, { DOM: domDriver, log: logDriver })
 
 
 // NOTE:
@@ -56,4 +59,5 @@ logDriver(logicStream.log)
 // Q:: Do xstream have cold observables?
 // Q:: Do we ever need cold observable?
 
+// Side-track: I think cycle.js would attract a lot of devs if rx.js is used, since it is the most buzz worded observable library.
 
