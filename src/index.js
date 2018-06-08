@@ -19,8 +19,8 @@ function domDriver(text$) {
 }
 
 // This returns a stream. 
-//Note steam of a logic completely seperated from how it's going to be attached to the dom
-// `sink` to represent end of logic stream. i.e. No logic flows upwards. Uni-directional.
+//Steam of a logic completely seperated from how it's going to be attached to the dom.
+// `sink` or `logicStream` to represent the end of logic stream. i.e. No logic flows upwards. Uni-directional.
 // Prefer name logicStream
 const logicStream = main()
 
@@ -30,9 +30,8 @@ domDriver(logicStream)
 
 // NOTE:
 // 1) Logic and side effects are seperated.
-//This means we can give logicStream (sink) to different drivers for different platform.
+//This means we can give logicStream (sink) to different drivers for different platforms.
 //Q:: How easy is it to make a complex drivers? 
-//
 //Q:: Is there a standard way where there are rules devs agree upon to make drivers? 
 
 
