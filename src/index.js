@@ -51,6 +51,10 @@ function run(mainFunc, driverObj) {
   const logicStreamObj = mainFunc({ DOM: click$ });
   relayFromLogicStream.imitate(logicStreamObj.DOM)
 
+  // However above does not work without relayFromLogicStream. click$ is not defined before calling mainFunc
+  //If we change the order then logicStreamObj is not defined.
+  // We can bypass this problem, by using a stream that simply relays the original stream so;
+
   // INITIALLY domDriver runs and subscribes to a stream that emits nothing, since it's hot observable no next tick happens upon subscribtion by driver.
   // it returns effect stream with no problem***. 
 
